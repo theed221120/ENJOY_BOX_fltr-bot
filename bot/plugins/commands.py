@@ -90,7 +90,7 @@ async def start(bot, update):
 
     buttons = [[
         InlineKeyboardButton('Developer', url='https://t./hsk_the_editor'),
-        InlineKeyboardButton('Enjoy Box✨', url ='hhttps://t.me/EB_Movies')
+        InlineKeyboardButton('Enjoy Box✨', url ='https://t.me/EB_Movies')
     ],[
         InlineKeyboardButton('Support 🛠', url='https://t.me/hsk_the_editor')
     ],[
