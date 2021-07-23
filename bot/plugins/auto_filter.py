@@ -1,3 +1,17 @@
+import logging
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+import urllib.request
+import json
+import imdb
+import os
+PORT = int(os.environ.get('PORT', 5000))
+api_key= 'c0c3fdda'
+ia = imdb.IMDb() 
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
 import re
 import logging
 import asyncio
@@ -27,7 +41,7 @@ async def auto_filter(bot, update):
     
     if ("https://" or "http://") in update.text:
         return
-    
+                
     query = re.sub(r"[1-2]\d{3}", "", update.text) # Targetting Only 1000 - 2999 😁
     
     if len(query) < 2:
@@ -66,12 +80,12 @@ async def auto_filter(bot, update):
             file_link = filter.get("file_link")
             file_size = int(filter.get("file_size", "0"))
             
-            # from B to MiB
+            # from B to MB
             
             if file_size < 1024:
                 file_size = f"[{file_size} B]"
             elif file_size < (1024**2):
-                file_size = f"[{str(round(file_size/1024, 2))} Kb Subtitle] "
+                file_size = f"[{str(round(file_size/1024, 2))} Subtitle] "
             elif file_size < (1024**3):
                 file_size = f"[{str(round(file_size/(1024**2), 2))} MB] "
             elif file_size < (1024**4):
@@ -203,9 +217,29 @@ async def auto_filter(bot, update):
         try:
             await bot.send_message(
                 chat_id = update.chat.id,
-                text=f"നിങ്ങൾ ചോദിച്ച സിനിമയുടെ {(len_results)} ഫയലുകള്‍ കിട്ടിയിട്ടുണ്ട് അതിൽ നിന്ന് Size നോക്കി കൃത്യമായ <code>{query}</code>സിനിമ File താഴെ നിന്ന് select ചെയ്യുക",
+                movie_name=update.message.text
+                    search = ia.search_movie(movie_name) 
+                      
+                    id='tt'+search[0].movieID
+                    
+                    url= 'http://www.omdbapi.com/?i='+id+'&apikey='+api_key
+                    
+                    x=urllib.request.urlopen(url)
+                    
+                    for line in x:
+                        x=line.decode()
+                    
+                    data=json.loads(x)
+                    
+                    ans=''
+                    ans+='*'+data['Title']+'* ('+data['Year']+')'+'\n\n'
+                    ans+='*IMDb Rating*: '+data['imdbRating']+' \n'
+                    ans+='*Cast*: '+data['Actors']+'\n'
+                    ans+='*Genre*: '+data['Genre']+'\n\n'
+                    ans+='*Plot*: '+data['Plot']+'\n'
+                    ans+='[.]('+data['Poster']+')',
                 reply_markup=reply_markup,
-                parse_mode="html",
+                parse_mode="markdown",
                 reply_to_message_id=update.message_id
             )
 
